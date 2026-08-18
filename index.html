@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>학생자치자료실</title>
+<style>
+  :root{
+    --bg:#f6f7f5;
+    --card:#ffffff;
+    --ink:#1e2b23;
+    --sub:#6b7a70;
+    --line:#e2e6df;
+    --accent:#2f6b4f;
+    --accent-soft:#e7f2ea;
+    --accent-dark:#204d38;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+  }
+  header{
+    padding:28px 20px 20px;
+    text-align:center;
+    border-bottom:1px solid var(--line);
+    background:var(--card);
+  }
+  header h1{
+    margin:0 0 6px;
+    font-size:22px;
+    letter-spacing:-0.5px;
+  }
+  header p{
+    margin:0;
+    color:var(--sub);
+    font-size:13px;
+  }
+  .wrap{
+    max-width:960px;
+    margin:0 auto;
+    padding:24px 16px 60px;
+  }
+  .tabbar{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    margin-bottom:22px;
+  }
+  .tabbar button{
+    border:1px solid var(--line);
+    background:var(--card);
+    color:var(--ink);
+    padding:9px 20px;
+    border-radius:999px;
+    font-size:14px;
+    cursor:pointer;
+    transition:.15s;
+  }
+  .tabbar button.active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+  }
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:center;
+    margin-bottom:26px;
+  }
+  .chip{
+    border:1px solid var(--line);
+    background:var(--card);
+    padding:8px 16px;
+    border-radius:10px;
+    font-size:13.5px;
+    cursor:pointer;
+    color:var(--sub);
+  }
+  .chip.active{
+    background:var(--accent-soft);
+    border-color:var(--accent);
+    color:var(--accent-dark);
+    font-weight:600;
+  }
+  .panel{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px;
+  }
+  .panel h2{
+    margin:0 0 4px;
+    font-size:17px;
+  }
+  .panel .desc{
+    margin:0 0 18px;
+    font-size:13px;
+    color:var(--sub);
+  }
+  .upload-row{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+    padding-bottom:20px;
+    border-bottom:1px dashed var(--line);
+  }
+  .upload-row input[type=text]{
+    flex:1 1 140px;
+    padding:9px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    font-size:13.5px;
+    min-width:120px;
+  }
+  .file-input-wrap{
+    flex:2 1 220px;
+    display:flex;
+    align-items:center;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:0 4px 0 12px;
+    min-width:200px;
+  }
+  .file-input-wrap span{
+    font-size:13px;
+    color:var(--sub);
+    flex:1;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .file-input-wrap input[type=file]{display:none;}
+  .file-input-wrap label{
+    padding:9px 12px;
+    font-size:13px;
+    cursor:pointer;
+    color:var(--accent-dark);
+    white-space:nowrap;
+  }
+  .btn{
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    padding:9px 18px;
+    font-size:13.5px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .btn:disabled{opacity:.5;cursor:default;}
+  .doc-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .doc-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:12px 14px;
+    border:1px solid var(--line);
+    border-radius:10px;
+  }
+  .doc-info{min-width:0;}
+  .doc-name{
+    font-size:14px;
+    font-weight:600;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .doc-meta{
+    font-size:12px;
+    color:var(--sub);
+    margin-top:2px;
+  }
+  .doc-download{
+    flex-shrink:0;
+    background:var(--accent-soft);
+    color:var(--accent-dark);
+    border:1px solid var(--accent);
+    border-radius:8px;
+    padding:7px 14px;
+    font-size:13px;
+    text-decoration:none;
+    cursor:pointer;
+  }
+  .empty{
+    text-align:center;
+    color:var(--sub);
+    font-size:13.5px;
+    padding:30px 0;
+  }
+  .status-msg{
+    font-size:12.5px;
+    margin-top:8px;
+    min-height:16px;
+  }
+  .status-msg.ok{color:var(--accent-dark);}
+  .status-msg.err{color:#b0403a;}
+  footer{
+    text-align:center;
+    color:var(--sub);
+    font-size:11.5px;
+    margin-top:30px;
+  }
+  .notice-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(20,26,22,0.45);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:100;
+    padding:20px;
+  }
+  .notice-box{
+    background:var(--card);
+    border-radius:var(--radius);
+    max-width:420px;
+    width:100%;
+    padding:24px;
+    box-shadow:0 10px 30px rgba(0,0,0,.15);
+  }
+  .notice-box h3{
+    margin:0 0 12px;
+    font-size:17px;
+  }
+  .notice-body{
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--ink);
+    white-space:pre-wrap;
+    max-height:280px;
+    overflow-y:auto;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:12px;
+  }
+  .notice-checkbox{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:12.5px;
+    color:var(--sub);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📚 학생자치자료실</h1>
+  <p>과목별 · 동아리별로 자료를 올리고 받아가세요</p>
+  <p style="margin-top:8px;">
+    <a href="#" onclick="openNoticeModal();return false;" style="font-size:12px;color:var(--accent-dark);">공지사항 다시 보기</a>
+    ·
+    <a href="#" onclick="openAdminNoticeEditor();return false;" style="font-size:12px;color:var(--sub);">관리자</a>
+  </p>
+</header>
+
+<div id="noticeOverlay" class="notice-overlay" style="display:none;">
+  <div class="notice-box">
+    <h3 id="noticeTitle">📌 이용 안내</h3>
+    <div id="noticeBody" class="notice-body"></div>
+    <label class="notice-checkbox">
+      <input type="checkbox" id="noticeDontShow"> 다시 보지 않기
+    </label>
+    <button class="btn" style="width:100%;margin-top:10px;" onclick="closeNoticeModal()">확인했어요</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="tabbar">
+    <button id="tab-subject" class="active" onclick="switchTab('subject')">과목</button>
+    <button id="tab-club" onclick="switchTab('club')">동아리</button>
+    <button id="tab-etc" onclick="switchTab('etc')">기타</button>
+  </div>
+
+  <div class="chips" id="chips"></div>
+
+  <div class="panel">
+    <h2 id="panel-title">과목을 선택하세요</h2>
+    <p class="desc" id="panel-desc">위에서 과목이나 동아리를 먼저 선택하면 자료를 올리고 받을 수 있어요.</p>
+
+    <div class="upload-row" id="upload-row" style="display:none;">
+      <input type="text" id="uploader" placeholder="이름 또는 닉네임 (선택)">
+      <div class="file-input-wrap">
+        <label for="fileInput">파일 선택</label>
+        <input type="file" id="fileInput" onchange="onFileChosen()">
+        <span id="fileNameLabel">선택된 파일 없음</span>
+      </div>
+      <button class="btn" id="uploadBtn" onclick="uploadFile()">업로드</button>
+    </div>
+    <div class="status-msg" id="statusMsg"></div>
+
+    <div class="doc-list" id="docList"></div>
+  </div>
+</div>
+
+<footer>학교 자료 공유 목적 외 사용 금지 · PDF / DOC / PPT / XLS / HWP / TXT (최대 25MB)</footer>
+
+<script>
+// Google Apps Script 웹 앱 배포 후 나오는 URL을 여기에 붙여넣으세요.
+// 예: "https://script.google.com/macros/s/AKfycb.../exec"
+const WEB_APP_URL = "https://script.google.com/a/macros/kbs.hs.kr/s/AKfycbzLb0Ll9mplki7FiLXROLhWHUJN8m9rcc_Hlq5o7mJCW36yl4QOEJX1oKdS7gpWiJOX/exec";
+
+const SUBJECTS = ["수학", "물리", "화학", "생명", "지구", "정보"];
+const CLUBS = ["플랑크", "케미아", "이카루스", "유레카", "POP", "글로브", "다윈"];
+const ETC_NAME = "기타";
+
+// 과목별 아이콘
+const SUBJECT_ICONS = {
+  "수학": "📐",
+  "물리": "⚛️",
+  "화학": "🧪",
+  "생명": "🧬",
+  "지구": "🌍",
+  "정보": "💻",
+};
+
+// 동아리별 아이콘 (동아리가 다루는 분야에 맞춤: 플랑크-물리, 케미아-화학, 이카루스-정보, 유레카-수학, POP-천체, 글로브-환경, 다윈-생명)
+const CLUB_ICONS = {
+  "플랑크": "⚛️",
+  "케미아": "🧪",
+  "이카루스": "💻",
+  "유레카": "📐",
+  "POP": "🔭",
+  "글로브": "🌱",
+  "다윈": "🧬",
+};
+
+const ETC_ICON = "🗂️";
+
+function iconFor(type, name){
+  if(type === "subject") return SUBJECT_ICONS[name] || "📘";
+  if(type === "club") return CLUB_ICONS[name] || "🧩";
+  return ETC_ICON;
+}
+
+let currentType = "subject";
+let currentCategory = null;
+
+function switchTab(type){
+  currentType = type;
+  currentCategory = null;
+  document.getElementById("tab-subject").classList.toggle("active", type === "subject");
+  document.getElementById("tab-club").classList.toggle("active", type === "club");
+  document.getElementById("tab-etc").classList.toggle("active", type === "etc");
+
+  if(type === "etc"){
+    document.getElementById("chips").innerHTML = "";
+    selectCategory(ETC_NAME, null);
+  } else {
+    renderChips();
+    renderEmptyPanel();
+  }
+}
+
+function renderChips(){
+  const list = currentType === "subject" ? SUBJECTS : CLUBS;
+  const chips = document.getElementById("chips");
+  chips.innerHTML = "";
+  list.forEach(name => {
+    const el = document.createElement("div");
+    el.className = "chip";
+    el.textContent = iconFor(currentType, name) + " " + name;
+    el.onclick = () => selectCategory(name, el);
+    chips.appendChild(el);
+  });
+}
+
+function renderEmptyPanel(){
+  document.getElementById("panel-title").textContent =
+    currentType === "subject" ? "과목을 선택하세요" : "동아리를 선택하세요";
+  document.getElementById("panel-desc").textContent =
+    "위에서 " + (currentType === "subject" ? "과목을" : "동아리를") + " 먼저 선택하면 자료를 올리고 받을 수 있어요.";
+  document.getElementById("upload-row").style.display = "none";
+  document.getElementById("docList").innerHTML = "";
+  document.getElementById("statusMsg").textContent = "";
+}
+
+function selectCategory(name, el){
+  currentCategory = name;
+  document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  if(el) el.classList.add("active");
+
+  document.getElementById("panel-title").textContent = iconFor(currentType, name) + " " + name;
+  document.getElementById("panel-desc").textContent =
+    currentType === "etc" ? "과목·동아리에 속하지 않는 자료를 올리거나 받아보세요." : name + " 관련 자료를 올리거나 받아보세요.";
+  document.getElementById("upload-row").style.display = "flex";
+  document.getElementById("statusMsg").textContent = "";
+  resetFileInput();
+  loadDocuments();
+}
+
+
+function resetFileInput(){
+  document.getElementById("fileInput").value = "";
+  document.getElementById("fileNameLabel").textContent = "선택된 파일 없음";
+}
+
+function onFileChosen(){
+  const f = document.getElementById("fileInput").files[0];
+  document.getElementById("fileNameLabel").textContent = f ? f.name : "선택된 파일 없음";
+}
+
+function fmtSize(bytes){
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + " KB";
+  return (bytes/1024/1024).toFixed(1) + " MB";
+}
+
+async function loadDocuments(){
+  const list = document.getElementById("docList");
+  list.innerHTML = "<div class='empty'>불러오는 중...</div>";
+  try{
+    const url = `${WEB_APP_URL}?action=documents&category_type=${currentType}&category_name=${encodeURIComponent(currentCategory)}`;
+    const res = await fetch(url);
+    const docs = await res.json();
+    if(docs.error) throw new Error(docs.error);
+    if(docs.length === 0){
+      list.innerHTML = "<div class='empty'>아직 올라온 자료가 없어요. 첫 번째로 올려보세요!</div>";
+      return;
+    }
+    list.innerHTML = "";
+    docs.forEach(d => {
+      const item = document.createElement("div");
+      item.className = "doc-item";
+      item.innerHTML = `
+        <div class="doc-info">
+          <div class="doc-name">${escapeHtml(d.original_name)}</div>
+          <div class="doc-meta">${d.uploader ? escapeHtml(d.uploader) + " · " : ""}${fmtSize(d.size)} · 다운로드 ${d.downloads}회 · ${d.created_at}</div>
+        </div>
+        <a class="doc-download" href="${WEB_APP_URL}?action=download&id=${d.id}" target="_blank" rel="noopener">다운로드</a>
+      `;
+      list.appendChild(item);
+    });
+  }catch(e){
+    list.innerHTML = "<div class='empty'>목록을 불러오지 못했어요. WEB_APP_URL 설정을 확인해주세요.</div>";
+  }
+}
+
+function escapeHtml(s){
+  const div = document.createElement("div");
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function readFileAsBase64(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.onerror = () => reject(new Error("파일 읽기 실패"));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadFile(){
+  const fileInput = document.getElementById("fileInput");
+  const uploader = document.getElementById("uploader").value.trim();
+  const statusMsg = document.getElementById("statusMsg");
+  const btn = document.getElementById("uploadBtn");
+
+  if(!fileInput.files[0]){
+    statusMsg.textContent = "파일을 먼저 선택해주세요.";
+    statusMsg.className = "status-msg err";
+    return;
+  }
+  if(!currentCategory){
+    statusMsg.textContent = "과목 또는 동아리를 먼저 선택해주세요.";
+    statusMsg.className = "status-msg err";
+    return;
+  }
+
+  const file = fileInput.files[0];
+  if(file.size > 25 * 1024 * 1024){
+    statusMsg.textContent = "파일 크기는 25MB 이하만 가능해요.";
+    statusMsg.className = "status-msg err";
+    return;
+  }
+
+  btn.disabled = true;
+  statusMsg.textContent = "업로드 중...";
+  statusMsg.className = "status-msg";
+
+  try{
+    const base64Data = await readFileAsBase64(file);
+    // Apps Script와의 CORS 프리플라이트를 피하기 위해 text/plain으로 전송 (본문은 JSON)
+    const res = await fetch(`${WEB_APP_URL}?action=upload`, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        category_type: currentType,
+        category_name: currentCategory,
+        uploader: uploader,
+        file_name: file.name,
+        mime_type: file.type || "application/octet-stream",
+        base64_data: base64Data,
+      }),
+    });
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+    statusMsg.textContent = "업로드 완료!";
+    statusMsg.className = "status-msg ok";
+    resetFileInput();
+    document.getElementById("uploader").value = "";
+    loadDocuments();
+  }catch(e){
+    statusMsg.textContent = e.message || "업로드 중 오류가 발생했습니다.";
+    statusMsg.className = "status-msg err";
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+// ── 공지사항 ──────────────────────────────────────────────────────────────
+const DEFAULT_USAGE_GUIDE =
+`1. 위에서 '과목' 또는 '동아리' 탭을 선택하세요.
+2. 원하는 과목/동아리를 클릭하면 올라온 자료 목록이 보여요.
+3. 자료를 올리려면 파일을 선택하고 '업로드'를 누르면 돼요. (이름 입력은 선택사항)
+4. 자료를 받으려면 목록에서 '다운로드'를 누르면 돼요.
+5. PDF·문서·PPT·엑셀·한글(HWP) 파일만 올릴 수 있고, 한 파일당 25MB까지 가능해요.`;
+
+let currentNoticeText = "";
+
+async function fetchNotice(){
+  try{
+    const res = await fetch(`${WEB_APP_URL}?action=notice`);
+    const data = await res.json();
+    currentNoticeText = data.notice || "";
+  }catch(e){
+    currentNoticeText = "";
+  }
+}
+
+function buildNoticeHtml(){
+  let html = "<strong>이용 방법</strong>\n" + DEFAULT_USAGE_GUIDE;
+  if(currentNoticeText){
+    html += "\n\n<strong>공지</strong>\n" + currentNoticeText;
+  }
+  return escapeHtml(html).replace(/&lt;strong&gt;(.*?)&lt;\/strong&gt;/g, "<strong>$1</strong>");
+}
+
+function openNoticeModal(){
+  document.getElementById("noticeBody").innerHTML = buildNoticeHtml();
+  document.getElementById("noticeOverlay").style.display = "flex";
+}
+
+function closeNoticeModal(){
+  document.getElementById("noticeOverlay").style.display = "none";
+  if(document.getElementById("noticeDontShow").checked){
+    localStorage.setItem("noticeDismissed", "1");
+  }
+}
+
+async function initNotice(){
+  await fetchNotice();
+  if(localStorage.getItem("noticeDismissed") !== "1"){
+    openNoticeModal();
+  }
+}
+
+async function openAdminNoticeEditor(){
+  const key = prompt("관리자 키를 입력하세요.");
+  if(key === null) return;
+  const newNotice = prompt("공지사항 내용을 입력하세요. (비워두면 공지 없음)", currentNoticeText);
+  if(newNotice === null) return;
+  try{
+    const res = await fetch(`${WEB_APP_URL}?action=notice`, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ admin_key: key, notice: newNotice })
+    });
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+    currentNoticeText = data.notice;
+    alert("공지사항이 저장되었습니다.");
+  }catch(e){
+    alert(e.message || "저장 중 오류가 발생했습니다.");
+  }
+}
+
+// 초기 렌더
+renderChips();
+renderEmptyPanel();
+initNotice();
+</script>
+
+</body>
+</html>
