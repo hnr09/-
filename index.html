@@ -192,6 +192,25 @@
     text-decoration:none;
     cursor:pointer;
   }
+  .doc-actions{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-shrink:0;
+  }
+  .doc-delete{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--sub);
+    border-radius:8px;
+    padding:7px 10px;
+    font-size:12px;
+    cursor:pointer;
+  }
+  .doc-delete:hover{
+    border-color:#b0403a;
+    color:#b0403a;
+  }
   .empty{
     text-align:center;
     color:var(--sub);
@@ -438,7 +457,10 @@ async function loadDocuments(){
           <div class="doc-name">${escapeHtml(d.original_name)}</div>
           <div class="doc-meta">${d.uploader ? escapeHtml(d.uploader) + " · " : ""}${fmtSize(d.size)} · 다운로드 ${d.downloads}회 · ${d.created_at}</div>
         </div>
-        <a class="doc-download" href="${WEB_APP_URL}?action=download&id=${d.id}" target="_blank" rel="noopener">다운로드</a>
+        <div class="doc-actions">
+          <a class="doc-download" href="${WEB_APP_URL}?action=download&id=${d.id}" target="_blank" rel="noopener">다운로드</a>
+          <button class="doc-delete" onclick="deleteDocument(${d.id})" title="관리자 전용">삭제</button>
+        </div>
       `;
       list.appendChild(item);
     });
@@ -451,6 +473,24 @@ function escapeHtml(s){
   const div = document.createElement("div");
   div.textContent = s;
   return div.innerHTML;
+}
+
+async function deleteDocument(id){
+  const key = prompt("이 자료를 삭제하려면 관리자 키를 입력하세요.");
+  if(key === null) return;
+  if(!confirm("정말 삭제할까요? 삭제하면 되돌릴 수 없어요.")) return;
+  try{
+    const res = await fetch(`${WEB_APP_URL}?action=delete`, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ admin_key: key, id: id }),
+    });
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+    loadDocuments();
+  }catch(e){
+    alert(e.message || "삭제 중 오류가 발생했습니다.");
+  }
 }
 
 function readFileAsBase64(file){
