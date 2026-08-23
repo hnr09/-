@@ -118,6 +118,15 @@
     font-size:13.5px;
     min-width:120px;
   }
+  .desc-input{
+    width:100%;
+    padding:9px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    font-size:13.5px;
+    margin-bottom:20px;
+    box-sizing:border-box;
+  }
   .file-input-wrap{
     flex:2 1 220px;
     display:flex;
@@ -180,6 +189,12 @@
     font-size:12px;
     color:var(--sub);
     margin-top:2px;
+  }
+  .doc-desc{
+    font-size:13px;
+    color:var(--ink);
+    margin-top:3px;
+    line-height:1.4;
   }
   .doc-download{
     flex-shrink:0;
@@ -317,13 +332,14 @@
       </div>
       <button class="btn" id="uploadBtn" onclick="uploadFile()">업로드</button>
     </div>
+    <input type="text" id="description" class="desc-input" placeholder="이 자료가 어떤 내용인지 짧게 적어주세요 (선택)" style="display:none;">
     <div class="status-msg" id="statusMsg"></div>
 
     <div class="doc-list" id="docList"></div>
   </div>
 </div>
 
-<footer>학교 자료 공유 목적 외 사용 금지 · PDF / DOC / PPT / XLS / HWP / TXT (최대 25MB)</footer>
+<footer>학교 자료 공유 목적 외 사용 금지 · PDF / DOC / PPT / XLS / HWP / TXT (최대 35MB)</footer>
 
 <script>
 // Google Apps Script 웹 앱 배포 후 나오는 URL을 여기에 붙여넣으세요.
@@ -401,6 +417,7 @@ function renderEmptyPanel(){
   document.getElementById("panel-desc").textContent =
     "위에서 " + (currentType === "subject" ? "과목을" : "동아리를") + " 먼저 선택하면 자료를 올리고 받을 수 있어요.";
   document.getElementById("upload-row").style.display = "none";
+  document.getElementById("description").style.display = "none";
   document.getElementById("docList").innerHTML = "";
   document.getElementById("statusMsg").textContent = "";
 }
@@ -414,6 +431,7 @@ function selectCategory(name, el){
   document.getElementById("panel-desc").textContent =
     currentType === "etc" ? "과목·동아리에 속하지 않는 자료를 올리거나 받아보세요." : name + " 관련 자료를 올리거나 받아보세요.";
   document.getElementById("upload-row").style.display = "flex";
+  document.getElementById("description").style.display = "block";
   document.getElementById("statusMsg").textContent = "";
   resetFileInput();
   loadDocuments();
@@ -423,6 +441,7 @@ function selectCategory(name, el){
 function resetFileInput(){
   document.getElementById("fileInput").value = "";
   document.getElementById("fileNameLabel").textContent = "선택된 파일 없음";
+  document.getElementById("description").value = "";
 }
 
 function onFileChosen(){
@@ -455,6 +474,7 @@ async function loadDocuments(){
       item.innerHTML = `
         <div class="doc-info">
           <div class="doc-name">${escapeHtml(d.original_name)}</div>
+          ${d.description ? `<div class="doc-desc">${escapeHtml(d.description)}</div>` : ""}
           <div class="doc-meta">${d.uploader ? escapeHtml(d.uploader) + " · " : ""}${fmtSize(d.size)} · 다운로드 ${d.downloads}회 · ${d.created_at}</div>
         </div>
         <div class="doc-actions">
@@ -505,6 +525,7 @@ function readFileAsBase64(file){
 async function uploadFile(){
   const fileInput = document.getElementById("fileInput");
   const uploader = document.getElementById("uploader").value.trim();
+  const description = document.getElementById("description").value.trim();
   const statusMsg = document.getElementById("statusMsg");
   const btn = document.getElementById("uploadBtn");
 
@@ -520,8 +541,8 @@ async function uploadFile(){
   }
 
   const file = fileInput.files[0];
-  if(file.size > 25 * 1024 * 1024){
-    statusMsg.textContent = "파일 크기는 25MB 이하만 가능해요.";
+  if(file.size > 35 * 1024 * 1024){
+    statusMsg.textContent = "파일 크기는 35MB 이하만 가능해요.";
     statusMsg.className = "status-msg err";
     return;
   }
@@ -540,6 +561,7 @@ async function uploadFile(){
         category_type: currentType,
         category_name: currentCategory,
         uploader: uploader,
+        description: description,
         file_name: file.name,
         mime_type: file.type || "application/octet-stream",
         base64_data: base64Data,
@@ -566,7 +588,7 @@ const DEFAULT_USAGE_GUIDE =
 2. 원하는 과목/동아리를 클릭하면 올라온 자료 목록이 보여요.
 3. 자료를 올리려면 파일을 선택하고 '업로드'를 누르면 돼요. (이름 입력은 선택사항)
 4. 자료를 받으려면 목록에서 '다운로드'를 누르면 돼요.
-5. PDF·문서·PPT·엑셀·한글(HWP) 파일만 올릴 수 있고, 한 파일당 25MB까지 가능해요.`;
+5. PDF·문서·PPT·엑셀·한글(HWP) 파일만 올릴 수 있고, 한 파일당 35MB까지 가능해요.`;
 
 let currentNoticeText = "";
 
